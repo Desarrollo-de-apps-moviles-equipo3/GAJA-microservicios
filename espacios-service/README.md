@@ -3,14 +3,6 @@
 Microservicio de **espacios, categorías y bloqueos de horario** de GAJA (N1). Spring Boot 3 + PostgreSQL (Supabase).
 La app nunca habla con Supabase: solo con este servicio.
 
-## Levantarlo
-
-1. En Supabase → SQL Editor, ejecuta `sql/schema.sql` (crea el esquema `espacios`).
-2. Define las variables de entorno (ver `.env.example`; **no subas la clave a GitHub**):
-   `SUPABASE_DB_URL`, `SUPABASE_DB_USER`, `SUPABASE_DB_PASSWORD`.
-3. `mvn spring-boot:run` (o ejecutar `EspaciosApplication` en IntelliJ con esas variables).
-4. Al primer arranque, si no hay espacios, carga los 6 de `assets/spaces.json`.
-
 Corre en `http://localhost:8081`. Desde el emulador Android: `http://10.0.2.2:8081`.
 Pruebas: `mvn test` (usan H2 en memoria, no necesitan Supabase).
 
@@ -62,7 +54,3 @@ Bloqueo (`timeSlot` usa el mismo formato de `ReservationValidator.TIME_SLOTS`, a
 ```json
 { "id": 1, "spaceId": "tenis-a", "date": "2026-11-25", "timeSlot": "08:00 - 10:00", "reason": "Mantención" }
 ```
-
-## Para Reservas (Gabriel)
-
-`GET /api/espacios/{id}/bloqueos?fecha=YYYY-MM-DD` devuelve los horarios bloqueados de ese día: se suman a los ya reservados para marcar `unavailableSlots` en el formulario.
