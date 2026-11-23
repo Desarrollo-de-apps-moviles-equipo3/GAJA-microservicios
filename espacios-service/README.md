@@ -3,7 +3,7 @@
 Microservicio de **espacios, categorías y bloqueos de horario** de GAJA (N1). Spring Boot 3 + PostgreSQL (Supabase).
 La app nunca habla con Supabase: solo con este servicio.
 
-Corre en `http://localhost:8081`. Desde el emulador Android: `http://10.0.2.2:8081`.
+Corre en `http://localhost:8082`. Desde el emulador Android: `http://10.0.2.2:8082`.
 Pruebas: `mvn test` (usan H2 en memoria, no necesitan Supabase).
 
 ## Endpoints
