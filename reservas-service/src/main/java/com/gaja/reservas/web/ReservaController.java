@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.PathVariable;
 import com.gaja.reservas.dto.ActualizarEstadoRequest;
+import com.gaja.reservas.model.EstadoReserva;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
@@ -23,6 +24,13 @@ public class ReservaController {
 
     public ReservaController(ReservaService reservaService) {
         this.reservaService = reservaService;
+    }
+
+    @GetMapping
+    public List<Reserva> listar(
+            @RequestParam(required = false) EstadoReserva estado
+    ) {
+        return reservaService.listar(estado);
     }
 
     @PostMapping
@@ -71,7 +79,11 @@ public class ReservaController {
         @PathVariable Long id,
         @Valid @RequestBody ActualizarEstadoRequest request
     ) {
-        return reservaService.actualizarEstado(id, request.getEstado());
+        return reservaService.actualizarEstado(
+                id,
+                request.getEstado(),
+                request.getMotivoRechazo()
+        );
     }
 
 }

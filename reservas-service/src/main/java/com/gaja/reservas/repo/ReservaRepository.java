@@ -12,6 +12,8 @@ public interface ReservaRepository  extends JpaRepository<Reserva, Long> {
 
     List<Reserva> findByUsuarioEmailOrderByFechaAsc(String usuarioEmail);
 
+    List<Reserva> findByEstadoOrderByFechaAscHorarioAsc(EstadoReserva estado);
+
     List<Reserva> findByFechaOrderByHorarioAsc(LocalDate fecha);
 
     List<Reserva> findByFechaAndEspacioAndEstadoInOrderByHorarioAsc(

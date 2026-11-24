@@ -5,6 +5,7 @@ import com.gaja.reservas.dto.CrearReservaRequest;
 import com.gaja.reservas.model.EstadoReserva;
 import com.gaja.reservas.model.Reserva;
 import com.gaja.reservas.repo.ReservaRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
@@ -99,6 +100,14 @@ public class ReservaService {
     }
 
     @Transactional(readOnly = true)
+    public List<Reserva> listar(EstadoReserva estado) {
+        if (estado == null) {
+            return reservaRepository.findAll(Sort.by("fecha", "horario"));
+        }
+        return reservaRepository.findByEstadoOrderByFechaAscHorarioAsc(estado);
+    }
+
+    @Transactional(readOnly = true)
     public List<Reserva> listarPorUsuario(String usuarioEmail) {
         return reservaRepository.findByUsuarioEmailOrderByFechaAsc(
                 usuarioEmail.trim()
@@ -177,7 +186,7 @@ public class ReservaService {
     }
 
     @Transactional
-    public Reserva actualizarEstado(Long id, EstadoReserva nuevoEstado) {
+    public Reserva actualizarEstado(Long id, EstadoReserva nuevoEstado, String motivoRechazo) {
     Reserva reserva = reservaRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
@@ -197,6 +206,13 @@ public class ReservaService {
         );
     }
 
+    if (nuevoEstado == EstadoReserva.RECHAZADA) {
+        if (motivoRechazo == null || motivoRechazo.isBlank()) {
+            throw new IllegalArgumentException("Indica el motivo del rechazo");
+        }
+        reserva.setMotivoRechazo(motivoRechazo.trim());
+    }
+
     reserva.setEstado(nuevoEstado);
         
 
@@ -204,7 +220,8 @@ public class ReservaService {
 
         String mensaje = nuevoEstado == EstadoReserva.APROBADA
                 ? "Tu reserva para " + guardada.getEspacio() + " fue aprobada."
-                : "Tu reserva para " + guardada.getEspacio() + " fue rechazada.";
+                : "Tu reserva para " + guardada.getEspacio()
+                    + " fue rechazada. Motivo: " + guardada.getMotivoRechazo();
 
                 alertaService.crearAlerta(
                         guardada.getUsuarioEmail(),

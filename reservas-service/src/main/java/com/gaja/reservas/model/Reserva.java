@@ -27,6 +27,9 @@ public class Reserva {
     @Column(nullable = false, length = 500)
     private String motivo;
 
+    @Column(name = "motivo_rechazo", length = 200)
+    private String motivoRechazo;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoReserva estado = EstadoReserva.PENDIENTE;
@@ -86,6 +89,14 @@ public class Reserva {
 
     public void setMotivo(String motivo) {
         this.motivo = motivo;
+    }
+
+    public String getMotivoRechazo() {
+        return motivoRechazo;
+    }
+
+    public void setMotivoRechazo(String motivoRechazo) {
+        this.motivoRechazo = motivoRechazo;
     }
 
     public EstadoReserva getEstado() {
