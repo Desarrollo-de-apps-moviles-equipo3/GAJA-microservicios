@@ -189,6 +189,17 @@ class UsuarioApiTest {
     }
 
     @Test
+    void buscarPorCorreoDevuelveElPerfilSinImportarMayusculas() throws Exception {
+        mvc.perform(get("/api/usuarios/por-correo").param("email", "CADETE@gaja.cl"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email", is("cadete@gaja.cl")))
+                .andExpect(jsonPath("$.rol", is("Cadete")));
+
+        mvc.perform(get("/api/usuarios/por-correo").param("email", "nadie@gaja.cl"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void obtenerUnUsuarioInexistenteDa404() throws Exception {
         mvc.perform(get("/api/usuarios/999999"))
                 .andExpect(status().isNotFound())

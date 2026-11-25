@@ -103,6 +103,14 @@ public class UsuarioService {
         return UsuarioResponse.of(buscar(id));
     }
 
+    /** La app guarda el correo de la sesión; con él busca su propio perfil. */
+    @Transactional(readOnly = true)
+    public UsuarioResponse obtenerPorCorreo(String email) {
+        return usuarios.findByEmailIgnoreCase(email.trim())
+                .map(UsuarioResponse::of)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+    }
+
     @Transactional(readOnly = true)
     public List<SesionResponse> sesiones(Long id) {
         buscar(id);
