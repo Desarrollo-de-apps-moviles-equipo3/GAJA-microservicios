@@ -16,8 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsuarioService {
 
     public static final String ADMIN = "Administrador";
+    public static final String EXTERNO = "Institución externa";
     public static final List<String> ROLES =
-            List.of("Cadete", "Oficial", "Oficial de semana", "Institución externa", ADMIN);
+            List.of("Cadete", "Oficial", "Oficial de semana", EXTERNO, ADMIN);
 
     private final UsuarioRepository usuarios;
     private final SesionRepository sesiones;
@@ -74,13 +75,17 @@ public class UsuarioService {
         if (!ROLES.contains(req.rol())) {
             throw new IllegalArgumentException("Rol no válido");
         }
+        String institucion = limpio(req.institucion());
+        if (EXTERNO.equals(req.rol()) && institucion == null) {
+            throw new IllegalArgumentException("Indica el nombre de la institución externa");
+        }
         String email = req.email().trim().toLowerCase();
         if (usuarios.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("Ya existe un usuario con ese correo");
         }
         Usuario u = new Usuario(email, encoder.encode(req.password()), req.nombre().trim(), req.rol(), estado);
         u.setTelefono(limpio(req.telefono()));
-        u.setInstitucion(limpio(req.institucion()));
+        u.setInstitucion(institucion);
         return UsuarioResponse.of(usuarios.save(u));
     }
 

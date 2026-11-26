@@ -206,6 +206,29 @@ class UsuarioApiTest {
                 .andExpect(jsonPath("$.error", is("Usuario no encontrado")));
     }
 
+    @Test
+    void unPerfilExternoDebeInformarSuInstitucionYLaConserva() throws Exception {
+        String email = correoNuevo();
+        enviar(post("/api/usuarios/registro"), """
+                {"email":"%s","password":"abcde","nombre":"Persona externa",
+                 "rol":"Institución externa","institucion":"   "}
+                """.formatted(email))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", containsString("institución externa")));
+
+        enviar(post("/api/usuarios/registro"), """
+                {"email":"%s","password":"abcde","nombre":"Persona externa",
+                 "rol":"Institución externa","institucion":" Club Deportivo "}
+                """.formatted(email))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.estado", is("PENDIENTE")))
+                .andExpect(jsonPath("$.institucion", is("Club Deportivo")));
+
+        mvc.perform(get("/api/usuarios/por-correo").param("email", email))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.institucion", is("Club Deportivo")));
+    }
+
     // ---------- Perfil del usuario ----------
 
     @Test
