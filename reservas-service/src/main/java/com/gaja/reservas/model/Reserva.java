@@ -30,6 +30,10 @@ public class Reserva {
     @Column(name = "motivo_rechazo", length = 200)
     private String motivoRechazo;
 
+    /** Oculta la reserva solo en la lista de su dueño; el administrador conserva el historial. */
+    @Column(name = "oculta_para_usuario", nullable = false, columnDefinition = "boolean default false")
+    private boolean ocultaParaUsuario = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoReserva estado = EstadoReserva.PENDIENTE;
@@ -97,6 +101,14 @@ public class Reserva {
 
     public void setMotivoRechazo(String motivoRechazo) {
         this.motivoRechazo = motivoRechazo;
+    }
+
+    public boolean isOcultaParaUsuario() {
+        return ocultaParaUsuario;
+    }
+
+    public void setOcultaParaUsuario(boolean ocultaParaUsuario) {
+        this.ocultaParaUsuario = ocultaParaUsuario;
     }
 
     public EstadoReserva getEstado() {

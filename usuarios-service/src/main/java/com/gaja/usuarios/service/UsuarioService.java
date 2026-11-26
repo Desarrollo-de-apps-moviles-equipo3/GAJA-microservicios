@@ -33,14 +33,14 @@ public class UsuarioService {
     // ---------- Login ----------
 
     /**
-     * 401 si el correo, la contrasena o el rol no coinciden (mismo mensaje para no dar pistas).
+     * 401 si el correo o la contrasena no coinciden (mismo mensaje para no dar pistas).
      * 403 si las credenciales son correctas pero el perfil no puede entrar: pendiente, rechazado o desactivado.
      */
     @Transactional
     public LoginResponse login(LoginRequest req) {
         Usuario u = usuarios.findByEmailIgnoreCase(req.email().trim()).orElse(null);
-        if (u == null || !encoder.matches(req.password(), u.getPasswordHash()) || !u.getRol().equals(req.rol())) {
-            throw new UnauthorizedException("Correo, contraseña o rol incorrectos");
+        if (u == null || !encoder.matches(req.password(), u.getPasswordHash())) {
+            throw new UnauthorizedException("Correo o contraseña incorrectos");
         }
         switch (u.getEstado()) {
             case PENDIENTE -> throw new ForbiddenException("Tu perfil está pendiente de aprobación");
