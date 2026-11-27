@@ -49,6 +49,17 @@ public class JwtService {
                 .compact();
     }
 
+    /** Identificador de la sesión (claim jti) de un token válido; vacío si el token no sirve. */
+    public Optional<String> idSesion(String token) {
+        try {
+            Claims datos = Jwts.parser().verifyWith(clave).build()
+                    .parseSignedClaims(token).getPayload();
+            return Optional.ofNullable(datos.getId());
+        } catch (JwtException | IllegalArgumentException e) {
+            return Optional.empty();
+        }
+    }
+
     /** Devuelve quién es, o vacío si el token está mal firmado, alterado o vencido. */
     public Optional<AuthUser> validar(String token) {
         try {

@@ -3,6 +3,7 @@ package com.gaja.usuarios.security;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
+import com.gaja.usuarios.service.SesionService;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -18,9 +19,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class AuthInterceptor implements HandlerInterceptor {
 
     private final JwtService jwt;
+    private final SesionService sesiones;
 
-    public AuthInterceptor(JwtService jwt) {
+    public AuthInterceptor(JwtService jwt, SesionService sesiones) {
         this.jwt = jwt;
+        this.sesiones = sesiones;
     }
 
     @Override
@@ -36,9 +39,13 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (cabecera == null || !cabecera.startsWith("Bearer ")) {
             throw new NoAutorizadoException("Debes iniciar sesión");
         }
-        AuthUser usuario = jwt.validar(cabecera.substring("Bearer ".length()).trim())
+        String token = cabecera.substring("Bearer ".length()).trim();
+        AuthUser usuario = jwt.validar(token)
                 .orElseThrow(() -> new NoAutorizadoException(
                         "Tu sesión no es válida o venció. Inicia sesión de nuevo"));
+        if (sesiones.estaRevocada(jwt.idSesion(token).orElse(null))) {
+            throw new NoAutorizadoException("Tu sesión fue cerrada. Inicia sesión de nuevo");
+        }
         request.setAttribute(AuthContext.ATRIBUTO, usuario);
 
         if (tiene(metodo, RequiereAdmin.class) && !usuario.esAdmin()) {
