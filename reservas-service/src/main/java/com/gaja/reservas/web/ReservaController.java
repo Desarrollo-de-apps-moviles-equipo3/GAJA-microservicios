@@ -1,6 +1,8 @@
 package com.gaja.reservas.web;
 
 import com.gaja.reservas.dto.CrearReservaRequest;
+import com.gaja.reservas.dto.ReglasReservaResponse;
+import com.gaja.reservas.dto.ActualizarReglasReservaRequest;
 import com.gaja.reservas.model.Reserva;
 import com.gaja.reservas.service.ReservaService;
 import jakarta.validation.Valid;
@@ -31,6 +33,18 @@ public class ReservaController {
             @RequestParam(required = false) EstadoReserva estado
     ) {
         return reservaService.listar(estado);
+    }
+
+    @GetMapping("/reglas")
+    public ReglasReservaResponse obtenerReglas() {
+        return reservaService.obtenerReglas();
+    }
+
+    @PutMapping("/reglas")
+    public ReglasReservaResponse actualizarReglas(
+            @Valid @RequestBody ActualizarReglasReservaRequest request
+    ) {
+        return reservaService.actualizarReglas(request);
     }
 
     @PostMapping
@@ -71,6 +85,14 @@ public class ReservaController {
     ) {
         return reservaService.cancelarReserva(id, email);
 
+    }
+
+    @PatchMapping("/{id}/ocultar")
+    public Reserva ocultarParaUsuario(
+            @PathVariable Long id,
+            @RequestParam String email
+    ) {
+        return reservaService.ocultarParaUsuario(id, email);
     }
 
 

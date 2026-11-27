@@ -189,10 +189,44 @@ class UsuarioApiTest {
     }
 
     @Test
+    void buscarPorCorreoDevuelveElPerfilSinImportarMayusculas() throws Exception {
+        mvc.perform(get("/api/usuarios/por-correo").param("email", "CADETE@gaja.cl"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email", is("cadete@gaja.cl")))
+                .andExpect(jsonPath("$.rol", is("Cadete")));
+
+        mvc.perform(get("/api/usuarios/por-correo").param("email", "nadie@gaja.cl"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void obtenerUnUsuarioInexistenteDa404() throws Exception {
         mvc.perform(get("/api/usuarios/999999"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error", is("Usuario no encontrado")));
+    }
+
+    @Test
+    void unPerfilExternoDebeInformarSuInstitucionYLaConserva() throws Exception {
+        String email = correoNuevo();
+        enviar(post("/api/usuarios/registro"), """
+                {"email":"%s","password":"abcde","nombre":"Persona externa",
+                 "rol":"Institución externa","institucion":"   "}
+                """.formatted(email))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", containsString("institución externa")));
+
+        enviar(post("/api/usuarios/registro"), """
+                {"email":"%s","password":"abcde","nombre":"Persona externa",
+                 "rol":"Institución externa","institucion":" Club Deportivo "}
+                """.formatted(email))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.estado", is("PENDIENTE")))
+                .andExpect(jsonPath("$.institucion", is("Club Deportivo")));
+
+        mvc.perform(get("/api/usuarios/por-correo").param("email", email))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.institucion", is("Club Deportivo")));
     }
 
     // ---------- Perfil del usuario ----------

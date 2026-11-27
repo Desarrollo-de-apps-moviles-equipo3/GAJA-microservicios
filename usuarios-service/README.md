@@ -24,6 +24,7 @@ Roles: `Cadete`, `Oficial`, `Oficial de semana`, `Institución externa`, `Admini
 | POST | `/registro` | Registro público, queda `PENDIENTE` |
 | POST | `/` | El administrador crea un usuario, queda `APROBADO` |
 | GET | `/?estado=&rol=` | Lista, con filtros opcionales |
+| GET | `/por-correo?email=` | Perfil de la persona con ese correo (la app lo usa con el correo de la sesión) |
 | GET | `/{id}` | Un perfil |
 | PUT | `/{id}` | Edita nombre, teléfono, institución y notificaciones |
 | PATCH | `/{id}/password` | Cambia la contraseña (pide la actual) |

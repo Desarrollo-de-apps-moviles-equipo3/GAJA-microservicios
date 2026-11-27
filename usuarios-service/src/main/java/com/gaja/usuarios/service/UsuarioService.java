@@ -16,8 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsuarioService {
 
     public static final String ADMIN = "Administrador";
+    public static final String EXTERNO = "Institución externa";
     public static final List<String> ROLES =
-            List.of("Cadete", "Oficial", "Oficial de semana", "Institución externa", ADMIN);
+            List.of("Cadete", "Oficial", "Oficial de semana", EXTERNO, ADMIN);
 
     private final UsuarioRepository usuarios;
     private final SesionRepository sesiones;
@@ -32,14 +33,14 @@ public class UsuarioService {
     // ---------- Login ----------
 
     /**
-     * 401 si el correo, la contrasena o el rol no coinciden (mismo mensaje para no dar pistas).
+     * 401 si el correo o la contrasena no coinciden (mismo mensaje para no dar pistas).
      * 403 si las credenciales son correctas pero el perfil no puede entrar: pendiente, rechazado o desactivado.
      */
     @Transactional
     public LoginResponse login(LoginRequest req) {
         Usuario u = usuarios.findByEmailIgnoreCase(req.email().trim()).orElse(null);
-        if (u == null || !encoder.matches(req.password(), u.getPasswordHash()) || !u.getRol().equals(req.rol())) {
-            throw new UnauthorizedException("Correo, contraseña o rol incorrectos");
+        if (u == null || !encoder.matches(req.password(), u.getPasswordHash())) {
+            throw new UnauthorizedException("Correo o contraseña incorrectos");
         }
         switch (u.getEstado()) {
             case PENDIENTE -> throw new ForbiddenException("Tu perfil está pendiente de aprobación");
@@ -74,13 +75,17 @@ public class UsuarioService {
         if (!ROLES.contains(req.rol())) {
             throw new IllegalArgumentException("Rol no válido");
         }
+        String institucion = limpio(req.institucion());
+        if (EXTERNO.equals(req.rol()) && institucion == null) {
+            throw new IllegalArgumentException("Indica el nombre de la institución externa");
+        }
         String email = req.email().trim().toLowerCase();
         if (usuarios.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("Ya existe un usuario con ese correo");
         }
         Usuario u = new Usuario(email, encoder.encode(req.password()), req.nombre().trim(), req.rol(), estado);
         u.setTelefono(limpio(req.telefono()));
-        u.setInstitucion(limpio(req.institucion()));
+        u.setInstitucion(institucion);
         return UsuarioResponse.of(usuarios.save(u));
     }
 
@@ -101,6 +106,14 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public UsuarioResponse obtener(Long id) {
         return UsuarioResponse.of(buscar(id));
+    }
+
+    /** La app guarda el correo de la sesión; con él busca su propio perfil. */
+    @Transactional(readOnly = true)
+    public UsuarioResponse obtenerPorCorreo(String email) {
+        return usuarios.findByEmailIgnoreCase(email.trim())
+                .map(UsuarioResponse::of)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
     }
 
     @Transactional(readOnly = true)

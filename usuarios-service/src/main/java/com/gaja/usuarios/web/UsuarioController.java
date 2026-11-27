@@ -42,6 +42,12 @@ public class UsuarioController {
         return service.listar(estado, rol);
     }
 
+    /** Perfil de la persona con ese correo (el de su sesión). Va antes de "/{id}" para que no se confundan. */
+    @GetMapping("/por-correo")
+    public UsuarioResponse porCorreo(@RequestParam String email) {
+        return service.obtenerPorCorreo(email);
+    }
+
     @GetMapping("/{id}")
     public UsuarioResponse obtener(@PathVariable Long id) {
         return service.obtener(id);

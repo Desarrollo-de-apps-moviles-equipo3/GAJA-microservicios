@@ -3,6 +3,7 @@ package com.gaja.usuarios.config;
 import com.gaja.usuarios.model.EstadoUsuario;
 import com.gaja.usuarios.model.Usuario;
 import com.gaja.usuarios.repo.UsuarioRepository;
+import com.gaja.usuarios.service.UsuarioService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -45,6 +46,9 @@ public class DataSeeder implements CommandLineRunner {
     private void crear(String email, String nombre, String rol, EstadoUsuario estado, String motivo) {
         Usuario u = new Usuario(email, encoder.encode(CLAVE), nombre, rol, estado);
         u.setMotivoRechazo(motivo);
+        if (UsuarioService.EXTERNO.equals(rol)) {
+            u.setInstitucion(nombre);
+        }
         usuarios.save(u);
     }
 }
