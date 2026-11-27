@@ -72,10 +72,12 @@ class UsuarioApiTest {
     }
 
     @Test
-    void clavePorCorreoOPorRolIncorrectoDa401() throws Exception {
+    void claveOCorreoIncorrectoDa401YElRolEnviadoSeIgnora() throws Exception {
         login("cadete@gaja.cl", "mala", "Cadete").andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error", is("Correo, contraseña o rol incorrectos")));
-        login("cadete@gaja.cl", "12345", "Oficial").andExpect(status().isUnauthorized());
+                .andExpect(jsonPath("$.error", is("Correo o contraseña incorrectos")));
+        // El rol que envia la app se ignora: el servicio devuelve el rol real de la cuenta.
+        login("cadete@gaja.cl", "12345", "Oficial").andExpect(status().isOk())
+                .andExpect(jsonPath("$.rol", is("Cadete")));
         login("nadie@gaja.cl", "12345", "Cadete").andExpect(status().isUnauthorized());
     }
 
