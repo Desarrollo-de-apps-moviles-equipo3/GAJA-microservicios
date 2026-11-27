@@ -1,5 +1,7 @@
 package com.gaja.espacios.web;
 
+import com.gaja.espacios.security.RequiereAdmin;
+
 import com.gaja.espacios.dto.BloqueoResponse;
 import com.gaja.espacios.service.BloqueoService;
 import java.time.LocalDate;
@@ -24,6 +26,7 @@ public class BloqueoController {
         return bloqueos.listar(fecha);
     }
 
+    @RequiereAdmin
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id) {

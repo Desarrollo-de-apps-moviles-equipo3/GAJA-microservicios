@@ -6,6 +6,7 @@ import com.gaja.usuarios.model.Sesion;
 import com.gaja.usuarios.model.Usuario;
 import com.gaja.usuarios.repo.SesionRepository;
 import com.gaja.usuarios.repo.UsuarioRepository;
+import com.gaja.usuarios.security.JwtService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,11 +24,13 @@ public class UsuarioService {
     private final UsuarioRepository usuarios;
     private final SesionRepository sesiones;
     private final PasswordEncoder encoder;
+    private final JwtService jwt;
 
-    public UsuarioService(UsuarioRepository usuarios, SesionRepository sesiones, PasswordEncoder encoder) {
+    public UsuarioService(UsuarioRepository usuarios, SesionRepository sesiones, PasswordEncoder encoder, JwtService jwt) {
         this.usuarios = usuarios;
         this.sesiones = sesiones;
         this.encoder = encoder;
+        this.jwt = jwt;
     }
 
     // ---------- Login ----------
@@ -49,8 +52,10 @@ public class UsuarioService {
             case DESACTIVADO -> throw new ForbiddenException("Tu perfil está desactivado. Contacta al administrador");
             default -> { }
         }
-        String token = UUID.randomUUID().toString();
-        sesiones.save(new Sesion(u.getId(), token));
+        // La sesion guardada en la base es solo un registro del ingreso; el token firmado es el JWT.
+        String idSesion = UUID.randomUUID().toString();
+        sesiones.save(new Sesion(u.getId(), idSesion));
+        String token = jwt.generar(u.getId(), u.getEmail(), u.getRol(), idSesion);
         return new LoginResponse(u.getId(), u.getEmail(), u.getNombre(), u.getRol(), u.getEstado().name(), token);
     }
 

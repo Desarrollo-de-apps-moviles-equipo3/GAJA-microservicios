@@ -1,5 +1,9 @@
 package com.gaja.reservas.web;
 
+import com.gaja.reservas.security.AuthContext;
+
+import com.gaja.reservas.security.RequiereAdmin;
+
 import com.gaja.reservas.dto.CrearReservaRequest;
 import com.gaja.reservas.dto.ReglasReservaResponse;
 import com.gaja.reservas.dto.ActualizarReglasReservaRequest;
@@ -28,6 +32,7 @@ public class ReservaController {
         this.reservaService = reservaService;
     }
 
+    @RequiereAdmin
     @GetMapping
     public List<Reserva> listar(
             @RequestParam(required = false) EstadoReserva estado
@@ -40,6 +45,7 @@ public class ReservaController {
         return reservaService.obtenerReglas();
     }
 
+    @RequiereAdmin
     @PutMapping("/reglas")
     public ReglasReservaResponse actualizarReglas(
             @Valid @RequestBody ActualizarReglasReservaRequest request
@@ -51,6 +57,7 @@ public class ReservaController {
     public ResponseEntity<Reserva> crear(
             @Valid @RequestBody CrearReservaRequest request
     ) {
+        AuthContext.exigirMismoCorreoOAdmin(request.getUsuarioEmail());
         Reserva reservaCreada = reservaService.crearReserva(request);
 
         return ResponseEntity
@@ -62,6 +69,7 @@ public class ReservaController {
     public List<Reserva> listarPorUsuario(
             @RequestParam String email
     ) {
+        AuthContext.exigirMismoCorreoOAdmin(email);
         return reservaService.listarPorUsuario(email);
     
     }
@@ -83,6 +91,7 @@ public class ReservaController {
         @PathVariable Long id,
         @RequestParam String email
     ) {
+        AuthContext.exigirMismoCorreoOAdmin(email);
         return reservaService.cancelarReserva(id, email);
 
     }
@@ -92,10 +101,12 @@ public class ReservaController {
             @PathVariable Long id,
             @RequestParam String email
     ) {
+        AuthContext.exigirMismoCorreoOAdmin(email);
         return reservaService.ocultarParaUsuario(id, email);
     }
 
 
+    @RequiereAdmin
     @PatchMapping("/{id}/estado")
     public Reserva actualizarEstado(    
         @PathVariable Long id,

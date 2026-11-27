@@ -10,6 +10,8 @@ import com.gaja.usuarios.model.Sesion;
 import com.gaja.usuarios.model.Usuario;
 import com.gaja.usuarios.repo.SesionRepository;
 import com.gaja.usuarios.repo.UsuarioRepository;
+import com.gaja.usuarios.security.AuthUser;
+import com.gaja.usuarios.security.JwtService;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,11 +41,12 @@ class UsuarioServiceTest {
     SesionRepository sesiones;
 
     PasswordEncoder encoder = new BCryptPasswordEncoder(4);
+    JwtService jwt = new JwtService("clave-solo-para-pruebas-0123456789-abcdefghij", 1);
     UsuarioService service;
 
     @BeforeEach
     void preparar() {
-        service = new UsuarioService(usuarios, sesiones, encoder);
+        service = new UsuarioService(usuarios, sesiones, encoder, jwt);
         when(usuarios.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
         when(usuarios.existsByEmailIgnoreCase(any())).thenReturn(false);
     }
@@ -73,10 +76,17 @@ class UsuarioServiceTest {
         assertEquals("cadete@gaja.cl", r.email());
         assertEquals("APROBADO", r.estado());
         assertNotNull(r.token());
+        // El token es un JWT firmado que identifica a la persona y su rol.
+        AuthUser quien = jwt.validar(r.token()).orElseThrow();
+        assertEquals(1L, quien.id());
+        assertEquals("cadete@gaja.cl", quien.email());
+        assertEquals("Cadete", quien.rol());
         ArgumentCaptor<Sesion> guardada = ArgumentCaptor.forClass(Sesion.class);
         verify(sesiones).save(guardada.capture());
         assertEquals(1L, guardada.getValue().getUsuarioId());
-        assertEquals(r.token(), guardada.getValue().getToken());
+        // La base solo guarda el id de la sesión, no el token completo.
+        assertFalse(guardada.getValue().getToken().isBlank());
+        assertNotEquals(r.token(), guardada.getValue().getToken());
     }
 
     @Test

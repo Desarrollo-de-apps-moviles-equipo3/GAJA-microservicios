@@ -1,5 +1,7 @@
 package com.gaja.espacios.web;
 
+import com.gaja.espacios.security.RequiereAdmin;
+
 import com.gaja.espacios.dto.CategoriaDto;
 import com.gaja.espacios.service.CategoriaService;
 import jakarta.validation.Valid;
@@ -22,17 +24,20 @@ public class CategoriaController {
         return categorias.listar();
     }
 
+    @RequiereAdmin
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoriaDto crear(@Valid @RequestBody CategoriaDto body) {
         return categorias.crear(body.name());
     }
 
+    @RequiereAdmin
     @PutMapping("/{id}")
     public CategoriaDto renombrar(@PathVariable Long id, @Valid @RequestBody CategoriaDto body) {
         return categorias.renombrar(id, body.name());
     }
 
+    @RequiereAdmin
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id) {

@@ -1,5 +1,7 @@
 package com.gaja.espacios.web;
 
+import com.gaja.espacios.security.RequiereAdmin;
+
 import com.gaja.espacios.dto.*;
 import com.gaja.espacios.service.BloqueoService;
 import com.gaja.espacios.service.EspacioService;
@@ -33,22 +35,26 @@ public class EspacioController {
         return espacios.obtener(id);
     }
 
+    @RequiereAdmin
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EspacioResponse crear(@Valid @RequestBody EspacioRequest req) {
         return espacios.crear(req);
     }
 
+    @RequiereAdmin
     @PutMapping("/{id}")
     public EspacioResponse actualizar(@PathVariable String id, @Valid @RequestBody EspacioRequest req) {
         return espacios.actualizar(id, req);
     }
 
+    @RequiereAdmin
     @PatchMapping("/{id}/disponibilidad")
     public EspacioResponse disponibilidad(@PathVariable String id, @Valid @RequestBody DisponibilidadRequest req) {
         return espacios.cambiarDisponibilidad(id, req.available());
     }
 
+    @RequiereAdmin
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable String id) {
@@ -62,6 +68,7 @@ public class EspacioController {
         return bloqueos.listarPorEspacio(id, fecha);
     }
 
+    @RequiereAdmin
     @PostMapping("/{id}/bloqueos")
     @ResponseStatus(HttpStatus.CREATED)
     public BloqueoResponse bloquear(@PathVariable String id, @Valid @RequestBody BloqueoRequest req) {
